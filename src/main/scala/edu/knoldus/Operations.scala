@@ -4,6 +4,7 @@ import org.apache.log4j.Logger
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 class Operations {
 
@@ -21,25 +22,30 @@ class Operations {
         val listOfFiles = fileList ::: listOfDirectory.filter (_.isFile)
 
         val listDir = directoryList.tail ::: listOfDirectory.filter (_.isDirectory)
-        getAllFiles(listDir,listOfFiles)
+        getAllFiles (listDir, listOfFiles)
       }
     }
 
     val file = new File (directoryList)
     val directory = List (file)
 
-    getAllFiles(directory, Nil)
+    getAllFiles (directory, Nil)
   }
+
 }
 
-object Application extends App {
+object Application {
+  def main (args: Array[String]) : Unit = {
+    val log = Logger.getLogger (this.getClass)
+    val obj1 = new Operations
+    val path = "/home/knoldus/Folder1"
+    val result = obj1.findFiles (path)
 
-  val log = Logger.getLogger(this.getClass)
-  val obj1 = new Operations
-  val path = "/home/knoldus/Folder1"
-  val result = obj1.findFiles(path)
-  for (iteration <- result)
-    log.debug(iteration)
-  val sleepTimer  = 1000
-  Thread.sleep (sleepTimer)
+    result onComplete {
+      case Success (successful) => log.info ("\n SuccessFul" + successful)
+      case Failure (result: Throwable) => log.info ("Error occur: \n" + result)
+    }
+    val sleepTimer = 1000
+    Thread.sleep (sleepTimer)
+  }
 }
